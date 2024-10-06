@@ -3,12 +3,14 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'pip install -r requirements.txt'
+                // Use full pip path
+                sh '/Library/Frameworks/Python.framework/Versions/3.12/bin/pip install -r requirements.txt'
             }
         }
         stage('Test') {
             steps {
-                sh 'python test_model.py'
+                // Use full python path
+                sh '/opt/anaconda3/bin/python test_model.py'
             }
         }
         stage('Code Quality Analysis') {
