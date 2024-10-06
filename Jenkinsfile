@@ -1,9 +1,9 @@
 pipeline {
     agent any
     environment {
-        // Access AWS credentials from Jenkins credentials store
-        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+        // Use AWS credentials stored in Jenkins
+        AWS_ACCESS_KEY_ID = credentials('aws-credentials')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-credentials')
     }
     stages {
         // Step 1: Build Stage
@@ -31,7 +31,7 @@ pipeline {
             }
         }
 
-        // Step 4: Deploy to AWS Elastic Beanstalk (Step 8)
+        // Step 4: Deploy to AWS Elastic Beanstalk
         stage('Deploy to AWS Elastic Beanstalk') {
             steps {
                 script {
@@ -54,7 +54,7 @@ pipeline {
             }
         }
 
-        // Step 5: Monitor AWS Elastic Beanstalk (Step 9)
+        // Step 5: Monitor AWS Elastic Beanstalk
         stage('Monitor & Alert') {
             steps {
                 script {
@@ -74,7 +74,7 @@ pipeline {
         }
     }
 
-    // Post-build actions (optional)
+    // Post-build actions
     post {
         success {
             echo 'Pipeline executed successfully!'
