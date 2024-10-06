@@ -1,16 +1,26 @@
 pipeline {
     agent any
+    environment {
+        // Access AWS credentials from Jenkins credentials store
+        AWS_ACCESS_KEY_ID = credentials('aws-credentials')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-credentials')
+    }
     stages {
+        // Step 1: Build Stage
         stage('Build') {
             steps {
                 sh '/Library/Frameworks/Python.framework/Versions/3.12/bin/pip install -r requirements.txt'
             }
         }
+
+        // Step 2: Test Stage
         stage('Test') {
             steps {
                 sh '/opt/anaconda3/bin/python test_model.py'
             }
         }
+
+        // Step 3: Code Quality Analysis Stage
         stage('Code Quality Analysis') {
             steps {
                 withSonarQubeEnv('SonarCloud') {
@@ -20,10 +30,57 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
+
+        // Step 4: Deploy to AWS Elastic Beanstalk (Step 8)
+        stage('Deploy to AWS Elastic Beanstalk') {
             steps {
-                echo 'Model training and testing complete.'
+                script {
+                    // AWS EB CLI commands to deploy the model
+                    sh '''
+                    # Install the AWS EB CLI if not installed
+                    pip install awsebcli --upgrade --user
+                    export PATH=~/.local/bin:$PATH
+                    
+                    # Initialize Elastic Beanstalk for deployment (only needed once)
+                    eb init -p python-3.8 <application-name> --region <aws-region>
+                    
+                    # Create a new environment (only needed for first-time deployment)
+                    eb create <environment-name>
+
+                    # Deploy the application
+                    eb deploy
+                    '''
+                }
             }
+        }
+
+        // Step 5: Monitor AWS Elastic Beanstalk (Step 9)
+        stage('Monitor & Alert') {
+            steps {
+                script {
+                    // Monitor the health of the application using CloudWatch
+                    sh '''
+                    aws cloudwatch describe-alarms --region <aws-region>
+                    '''
+                }
+            }
+        }
+
+        // Final Stage: Echo Message
+        stage('Final Stage') {
+            steps {
+                echo 'Model training, testing, and deployment complete.'
+            }
+        }
+    }
+
+    // Post-build actions (optional)
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check logs for more details.'
         }
     }
 }
