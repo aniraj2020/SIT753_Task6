@@ -44,10 +44,10 @@ pipeline {
                     export PATH=/Users/ani/Library/Python/3.12/bin:$PATH
                     
                     # Initialize Elastic Beanstalk for deployment (only needed once)
-                    eb init -p python-3.8 your-application-name --region your-aws-region
+                    eb init -p python-3.8 sit753-hd-app --region us-east-1
                     
                     # Create a new environment (only needed for first-time deployment)
-                    eb create your-environment-name --region your-aws-region
+                    eb create sit753-hd-app-env --region us-east-1
 
                     # Deploy the application
                     eb deploy
@@ -62,7 +62,7 @@ pipeline {
                 script {
                     // Monitor the health of the application using CloudWatch
                     sh '''
-                    aws cloudwatch describe-alarms --region your-aws-region
+                    aws cloudwatch describe-alarms --region us-east-1
                     '''
                 }
             }
