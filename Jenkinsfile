@@ -2,8 +2,8 @@ pipeline {
     agent any
     environment {
         // Access AWS credentials from Jenkins credentials store
-        AWS_ACCESS_KEY_ID = credentials('aws-credentials')
-        AWS_SECRET_ACCESS_KEY = credentials('aws-credentials')
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
     }
     stages {
         // Step 1: Build Stage
@@ -42,10 +42,10 @@ pipeline {
                     export PATH=~/.local/bin:$PATH
                     
                     # Initialize Elastic Beanstalk for deployment (only needed once)
-                    eb init -p python-3.8 <application-name> --region <aws-region>
+                    eb init -p python-3.8 your-application-name --region your-aws-region
                     
                     # Create a new environment (only needed for first-time deployment)
-                    eb create <environment-name>
+                    eb create your-environment-name --region your-aws-region
 
                     # Deploy the application
                     eb deploy
@@ -60,7 +60,7 @@ pipeline {
                 script {
                     // Monitor the health of the application using CloudWatch
                     sh '''
-                    aws cloudwatch describe-alarms --region <aws-region>
+                    aws cloudwatch describe-alarms --region your-aws-region
                     '''
                 }
             }
