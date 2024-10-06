@@ -4,6 +4,8 @@ pipeline {
         // Access AWS credentials from Jenkins credentials store
         AWS_ACCESS_KEY_ID = credentials('aws-credentials')
         AWS_SECRET_ACCESS_KEY = credentials('aws-credentials')
+        // Add the path to the EB CLI
+        PATH = "/Users/ani/Library/Python/3.12/bin:$PATH"
     }
     stages {
         // Step 1: Build Stage
@@ -36,10 +38,10 @@ pipeline {
         stage('Deploy to AWS Elastic Beanstalk') {
             steps {
                 script {
-                    // Use the correct path for pip
+                    // AWS EB CLI commands to deploy the model
                     sh '''
                     /Library/Frameworks/Python.framework/Versions/3.12/bin/pip install awsebcli --upgrade --user
-                    export PATH=~/.local/bin:$PATH
+                    export PATH=/Users/ani/Library/Python/3.12/bin:$PATH
                     
                     # Initialize Elastic Beanstalk for deployment (only needed once)
                     eb init -p python-3.8 your-application-name --region your-aws-region
