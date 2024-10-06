@@ -1,29 +1,32 @@
 pipeline {
     agent any
     environment {
-        // Access AWS credentials from Jenkins credentials store
         AWS_ACCESS_KEY_ID = credentials('aws-credentials')
         AWS_SECRET_ACCESS_KEY = credentials('aws-credentials')
-        // Add the path to the EB CLI
-        PATH = "/Users/ani/Library/Python/3.12/bin:$PATH"
+        PATH = "/opt/anaconda3/bin:$PATH"
     }
     stages {
-        // Step 1: Build Stage
-        stage('Build') {
+        stage('Checkout SCM') {
             steps {
-                // Use the correct path for pip
-                sh '/Library/Frameworks/Python.framework/Versions/3.12/bin/pip install -r requirements.txt'
+                checkout scm
+                sh 'git checkout main'  // Ensure you are on the main branch
             }
         }
 
-        // Step 2: Test Stage
+        stage('Build') {
+            steps {
+                // Use Anaconda Python to install dependencies
+                sh '/opt/anaconda3/bin/python -m pip install -r requirements.txt'
+            }
+        }
+
         stage('Test') {
             steps {
+                // Use Anaconda Python to run tests
                 sh '/opt/anaconda3/bin/python test_model.py'
             }
         }
 
-        // Step 3: Code Quality Analysis Stage
         stage('Code Quality Analysis') {
             steps {
                 withSonarQubeEnv('SonarCloud') {
@@ -34,49 +37,46 @@ pipeline {
             }
         }
 
-        // Step 4: Deploy to AWS Elastic Beanstalk
         stage('Deploy to AWS Elastic Beanstalk') {
             steps {
                 script {
-                    // AWS EB CLI commands to deploy the model
                     sh '''
-                    /Library/Frameworks/Python.framework/Versions/3.12/bin/pip install awsebcli --upgrade --user
+                    # Install EB CLI using Anaconda Python
+                    /opt/anaconda3/bin/python -m pip install awsebcli --upgrade --user
                     export PATH=/Users/ani/Library/Python/3.12/bin:$PATH
                     
-                    # Initialize Elastic Beanstalk for deployment (only needed once)
-                    eb init -p python-3.8 sit753-hd-app --region us-east-1
-                    
-                    # Create a new environment (only needed for first-time deployment)
-                    eb create sit753-hd-app-env --region us-east-1
-
-                    # Deploy the application
-                    eb deploy
+                    # Deploy the application to the existing environment
+                    eb deploy sit753-hd-app-env --region us-east-1
                     '''
                 }
             }
         }
 
-        // Step 5: Monitor AWS Elastic Beanstalk
         stage('Monitor & Alert') {
+            when {
+                expression {
+                    currentBuild.result == null || currentBuild.result == 'SUCCESS'
+                }
+            }
             steps {
                 script {
-                    // Monitor the health of the application using CloudWatch
-                    sh '''
-                    aws cloudwatch describe-alarms --region us-east-1
-                    '''
+                    sh 'aws cloudwatch describe-alarms --region us-east-1'
                 }
             }
         }
 
-        // Final Stage: Echo Message
         stage('Final Stage') {
+            when {
+                expression {
+                    currentBuild.result == null || currentBuild.result == 'SUCCESS'
+                }
+            }
             steps {
                 echo 'Model training, testing, and deployment complete.'
             }
         }
     }
 
-    // Post-build actions
     post {
         success {
             echo 'Pipeline executed successfully!'
