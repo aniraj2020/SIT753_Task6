@@ -3,22 +3,24 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Install dependencies
-                sh '/Library/Frameworks/Python.framework/Versions/3.12/bin/pip install -r requirements.txt'
-                // Train the model and save the pickle file
-                sh '/opt/anaconda3/bin/python train_model.py'
+                sh 'pip install -r requirements.txt'
             }
         }
         stage('Test') {
             steps {
-                // Run the tests after training
-                sh '/opt/anaconda3/bin/python test_model.py'
+                sh 'python test_model.py'
+            }
+        }
+        stage('Code Quality Analysis') {
+            steps {
+                withSonarQubeEnv('SonarCloud') {
+                    sh 'sonar-scanner -Dsonar.projectKey=aniraj2020_SIT753_Task6 -Dsonar.organization=aniraj2020 -Dsonar.login=71e7f4891be40e7df01e1a514eff68a75525dcb3'
+                }
             }
         }
         stage('Deploy') {
             steps {
-                // Optionally, deploy or perform other actions here
-                echo "Model training and testing complete."
+                echo 'Model training and testing complete.'
             }
         }
     }
