@@ -3,17 +3,17 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '/Library/Frameworks/Python.framework/Versions/3.12/bin/pip install -r requirements.txt'
             }
         }
         stage('Test') {
             steps {
-                sh 'python test_model.py'
+                sh '/opt/anaconda3/bin/python test_model.py'
             }
         }
         stage('Deploy') {
             steps {
-                sh 'python train_model.py'
+                sh '/opt/anaconda3/bin/python train_model.py'
             }
         }
     }
