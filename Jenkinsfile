@@ -14,7 +14,7 @@ pipeline {
         stage('Code Quality Analysis') {
             steps {
                 withSonarQubeEnv('SonarCloud') {
-                    withCredentials([string(credentialsId: 'sonarcloud_token', variable: 'SONAR_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'b6392e5a-dde5-4913-9f63-3ba988f1601b', variable: 'SONAR_TOKEN')]) {
                         sh '/opt/homebrew/bin/sonar-scanner -Dsonar.projectKey=aniraj2020_SIT753_Task6 -Dsonar.organization=aniraj2020 -Dsonar.login=$SONAR_TOKEN'
                     }
                 }
